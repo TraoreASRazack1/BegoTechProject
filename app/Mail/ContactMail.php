@@ -41,6 +41,7 @@ class ContactMail extends Mailable
             view: 'tasks.mail',
         );
     }
+    
     public function build()
     {
         return $this->subject('Mail de Letecode.com')

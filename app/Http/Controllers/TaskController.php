@@ -6,19 +6,78 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Notifications\TaskAssigned;
 use App\Mail\ContactMail;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
 
 class TaskController extends Controller
 {
+    public function __construct()
+    {
+        // Appeler la fonction pour attribuer le rôle admin lors de la création du contrôleur
+        $this->assignRoleToAdmin();
+    }
     public function index()
 {
     $tasks = auth()->user()->tasks()->get();
+
     return view('tasks.home', compact('tasks'));
 }
 
+public function assignRoleToAdmin()
+    {
+        $user = auth()->user();
+
+        // Vérifier si l'utilisateur existe et n'a pas encore le rôle 'admin'
+        if ($user && !$user->hasRole('admin')) {
+            // Récupérer le rôle 'admin'
+            $adminRole = Role::findByName('admin');
+
+            // Vérifier si le rôle existe
+            if ($adminRole) {
+                // Assigner le rôle à l'utilisateur
+                $user->assignRole($adminRole);
+            }
+        }
+    }
+    
+public function assignRoleToUser($userId, $roleName)
+{
+    // Récupérer l'utilisateur
+    $user = User::find($userId);
+
+    // Vérifier si l'utilisateur existe
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur non trouvé.'], 404);
+    }
+
+    // Récupérer le rôle
+    $role = Role::findByName($roleName);
+
+    // Vérifier si le rôle existe
+    if (!$role) {
+        return response()->json(['message' => 'Rôle non trouvé.'], 404);
+    }
+
+    // Assigner le rôle à l'utilisateur
+    $user->assignRole($role);
+
+    return response()->json(['message' => 'Rôle attribué avec succès.']);
+}
 
     public function create()
     {
-        return view('tasks.create');
+        $user= auth()->user();
+        if ($user->hasRole('admin')) {
+            // L'utilisateur a le rôle d'administrateur
+            return view('tasks.create');
+        }
+        else 
+        {
+            //dd($user->getRoleNames());
+            return abort(404);
+        }
+        
     }
 
     public function store(Request $request)
@@ -64,7 +123,9 @@ class TaskController extends Controller
         $task = Task::findOrFail($id);
         return view('tasks.edit', compact('task'));
     }
-    public function mail(Request $request,$id )
+
+
+    public function mail(Request $request,$id)
     {
         $task = Task::findOrFail($id);
            
@@ -76,9 +137,12 @@ class TaskController extends Controller
    
     \Mail::to($task->assigned_email)->send(new \App\Mail\ContactMail($details));
    
-    dd("Email is Sent.");
+    //dd("Email is Sent.");
         return view('tasks.mail', compact('task'));
     }
+
+
+
     public function show($id)
     {
         return redirect()->route('tasks.edit', $id);

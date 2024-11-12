@@ -44,3 +44,4 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/tasks/filter', [TaskController::class, 'filter'])->name('tasks.filter');
 Route::get('/tasks/mail/{id}', [TaskController::class, 'mail'])->name('tasks.mail');
+Route::get('/assign-role/{userId}/{roleName}', [TaskController::class, 'assignRoleToUser']);

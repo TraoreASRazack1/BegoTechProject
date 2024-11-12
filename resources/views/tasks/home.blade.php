@@ -1,5 +1,5 @@
 <!-- resources/views/tasks/home.blade.php -->
-
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 @extends('layouts.app')
 
 @section('content')
@@ -95,10 +95,34 @@
         <button type="submit" class="btn btn-primary mt-3">Filtrer</button>
     </form>
 </div>
+ <!-- Exemple de bouton pour attribuer le rôle 
+ <button onclick="RoleUser('{{ auth()->user()->id }}', 'admin')">Attribuer le rôle Admin</button>-->
+
+
 </div>
 <script>
         function refreshPage() {
             location.reload(); // Cette fonction recharge la page
         }
-    </script>
+        $(document).ready(function() {
+         $('#assignRoleBtn').on('click', function() {
+             var userId = $(this).data('user-id');
+             var roleName = $(this).data('role-name');
+
+             // Requête Ajax pour attribuer le rôle
+             $.get('/assign-role/' + userId + '/' + roleName, function(data) {
+                 alert(data.message); // Affiche le message de la réponse
+             });
+         });
+     });
+      function RoleUser(var userid, var rolename) {
+             var userId = userid;
+             var roleName = rolename;
+
+             // Requête Ajax pour attribuer le rôle
+             $.get('/assign-role/' + userId + '/' + roleName, function(data) {
+                 alert(data.message); // Affiche le message de la réponse
+             });
+         };
+</script>
 @endsection
